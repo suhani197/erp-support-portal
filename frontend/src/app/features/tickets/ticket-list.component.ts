@@ -1,8 +1,8 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TicketService } from '../../core/services/api.services';
+import { TicketService, AdminService } from '../../core/services/api.services';
 import { AuthService } from '../../core/services/auth.service';
 import { TicketSummary } from '../../shared/models/models';
 
@@ -43,13 +43,17 @@ export class StatusLabelPipe implements PipeTransform {
         <option value="">All Modules</option>
         <option *ngFor="let m of modules" [value]="m">{{ m }}</option>
       </select>
+      <select *ngIf="auth.hasRole('ADMIN')" [(ngModel)]="filters.agentId" (change)="onAgentFilter()">
+        <option value="">All Agents</option>
+        <option *ngFor="let a of agents()" [value]="a.id">{{ a.fullName }}</option>
+      </select>
       <button class="btn-ghost" (click)="clearFilters()">Clear</button>
     </div>
 
     <div class="filters" style="margin-top:-8px;">
       <button class="btn-ghost" (click)="showAll()" [disabled]="viewMode() === 'ALL'">All</button>
-      <button class="btn-ghost" (click)="showMyAssigned()" [disabled]="viewMode() === 'MY'" *ngIf="auth.hasRole('AGENT','ADMIN')">My Assigned</button>
-      <button class="btn-ghost" (click)="showUnassigned()" [disabled]="viewMode() === 'UNASSIGNED'">Unassigned</button>
+      <button class="btn-ghost" (click)="showMyAssigned()" [disabled]="viewMode() === 'MY'" *ngIf="auth.hasRole('ADMIN')">My Assigned</button>
+      <button class="btn-ghost" (click)="showUnassigned()" [disabled]="viewMode() === 'UNASSIGNED'" *ngIf="auth.hasRole('ADMIN')">Unassigned</button>
     </div>
 
     @if (loading()) {
@@ -61,17 +65,17 @@ export class StatusLabelPipe implements PipeTransform {
         <table class="ticket-table">
           <thead>
             <tr>
-              <th (click)="setSort('id')">#</th>
-              <th (click)="setSort('title')">Title</th>
-              <th (click)="setSort('status')">Status</th>
-              <th (click)="setSort('priority')">Priority</th>
-              <th (click)="setSort('appModule')">Module</th>
-              <th>Assigned To</th>
-              <th (click)="setSort('createdAt')">Created</th>
+              <th class="sortable" (click)="setSort('id')">          # {{ sortIcon('id') }}</th>
+              <th class="sortable" (click)="setSort('title')">       Title {{ sortIcon('title') }}</th>
+              <th class="sortable" (click)="setSort('status')">      Status {{ sortIcon('status') }}</th>
+              <th class="sortable" (click)="setSort('priority')">    Priority {{ sortIcon('priority') }}</th>
+              <th class="sortable" (click)="setSort('AppModule')">   Module {{ sortIcon('AppModule') }}</th>
+              <th>                                                    Assigned To</th>
+              <th class="sortable" (click)="setSort('createdAt')">   Created {{ sortIcon('createdAt') }}</th>
             </tr>
           </thead>
           <tbody>
-            @for (t of tickets(); track t.id) {
+            @for (t of sortedTickets(); track t.id) {
               <tr [routerLink]="['/tickets', t.id]" class="clickable-row">
                 <td class="id-col">{{ t.id }}</td>
                 <td class="title-col">{{ t.title }}</td>
@@ -122,6 +126,8 @@ export class StatusLabelPipe implements PipeTransform {
       font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase;
       letter-spacing: 0.5px; border-bottom: 1px solid #eee;
     }
+    .ticket-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+    .ticket-table th.sortable:hover { color: #1a1a2e; background: #f0f0eb; }
     .ticket-table td { padding: 12px 14px; border-bottom: 1px solid #f5f5f0; font-size: 14px; }
     .ticket-table tr:last-child td { border-bottom: none; }
     .clickable-row { cursor: pointer; transition: background 0.1s; }
@@ -152,28 +158,61 @@ export class StatusLabelPipe implements PipeTransform {
 })
 export class TicketListComponent implements OnInit {
   private ticketSvc = inject(TicketService);
+  private adminSvc  = inject(AdminService);
   auth = inject(AuthService);
 
-  tickets   = signal<TicketSummary[]>([]);
-  loading   = signal(true);
-  total     = signal(0);
-  totalPages= signal(1);
-  page      = signal(0);
-  sortField = signal('createdAt');   // use backend field names
-  sortDir   = signal<'asc'|'desc'>('desc');
-  viewMode = signal<'ALL' | 'UNASSIGNED' | 'MY'>('ALL');
+  tickets    = signal<TicketSummary[]>([]);
+  agents     = signal<any[]>([]);
+  loading    = signal(true);
+  total      = signal(0);
+  totalPages = signal(1);
+  page       = signal(0);
+  sortField  = signal('createdAt');
+  sortDir    = signal<'asc'|'desc'>('desc');
+  viewMode   = signal<'ALL' | 'UNASSIGNED' | 'MY'>('ALL');
 
-  filters: any = { status: '', priority: '', module: '' };
+  filters: any = { status: '', priority: '', module: '', agentId: '' };
   statuses = ['NEW','ASSIGNED','IN_PROGRESS','WAITING_CUSTOMER','RESOLVED','CLOSED'];
   modules  = ['FINANCE','INVENTORY','SALES','TECHNICAL','HR','PROCUREMENT'];
+
+  sortedTickets = computed(() => {
+    const field = this.sortField();
+    const dir   = this.sortDir() === 'asc' ? 1 : -1;
+    return [...this.tickets()].sort((a, b) => {
+      const av = (a as any)[field] ?? '';
+      const bv = (b as any)[field] ?? '';
+      return av < bv ? -dir : av > bv ? dir : 0;
+    });
+  });
+
+  sortIcon(field: string): string {
+    if (this.sortField() !== field) return '↕';
+    return this.sortDir() === 'asc' ? '▲' : '▼';
+  }
 
   private route = inject(ActivatedRoute);
 
   ngOnInit() {
+    if (this.auth.hasRole('ADMIN')) {
+      this.adminSvc.getUsers().subscribe(users =>
+        this.agents.set(users.filter(u => u.role === 'AGENT' || u.role === 'ADMIN'))
+      );
+    }
     this.route.queryParams.subscribe(qp => {
       if (qp['assignedToId']) (this.filters as any)['assignedToId'] = qp['assignedToId'];
       this.load();
     });
+  }
+
+  onAgentFilter() {
+    const id = this.filters.agentId;
+    if (id) {
+      (this.filters as any)['assignedToId'] = id;
+    } else {
+      delete (this.filters as any)['assignedToId'];
+    }
+    this.page.set(0);
+    this.load();
   }
 
   load() {
@@ -218,7 +257,7 @@ export class TicketListComponent implements OnInit {
     this.load();
   }
 
-  clearFilters() { this.filters = { status: '', priority: '', module: '' }; this.page.set(0); this.load(); }
+  clearFilters() { this.filters = { status: '', priority: '', module: '', agentId: '' }; this.page.set(0); this.load(); }
   prevPage() {
     if (this.page() === 0) return;
     this.page.update(p => p - 1);
@@ -227,13 +266,11 @@ export class TicketListComponent implements OnInit {
 
   setSort(field: string) {
     if (this.sortField() === field) {
-      this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
+      this.sortDir.update(d => d === 'asc' ? 'desc' : 'asc');
     } else {
       this.sortField.set(field);
       this.sortDir.set('asc');
     }
-    this.page.set(0);
-    this.load();
   }
 
   nextPage() {

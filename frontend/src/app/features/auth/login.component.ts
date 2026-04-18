@@ -12,7 +12,7 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="login-card">
         <div class="login-header">
           <div class="login-logo">
-            <img src="assets/images/logologin.svg" alt="ERP Support Logo" width="120" height="48" />
+            <img src="assets/logo.jpg" alt="SP Solution Co" class="login-logo-img" />
           </div>
           <h1>ERP Support Portal</h1>
           <p>Sign in to your account</p>
@@ -61,6 +61,7 @@ import { AuthService } from '../../core/services/auth.service';
     }
     .login-header { text-align: center; margin-bottom: 2rem; }
     .login-logo { margin-bottom: 0.75rem; display: flex; justify-content: center; }
+    .login-logo-img { max-width: 140px; height: auto; object-fit: contain; border-radius: 6px; }
     h1 { margin: 0 0 0.5rem; font-size: 22px; font-weight: 600; color: #1a1a2e; }
     p { margin: 0; color: #888; font-size: 14px; }
 

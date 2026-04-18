@@ -11,8 +11,7 @@ import { AuthService } from './core/services/auth.service';
   <div class="app-shell">
     <aside class="sidebar" *ngIf="auth.isLoggedIn()">
       <div class="brand">
-        <div class="brand-title">ERP Support</div>
-        <div class="brand-sub">Portal</div>
+        <img src="assets/logo.jpg" alt="SP Solution Co" class="brand-logo" />
       </div>
 
       <nav class="nav">
@@ -38,9 +37,6 @@ import { AuthService } from './core/services/auth.service';
           <span class="muted">ERP Support Portal</span>
         </div>
         <div class="top-actions">
-          <div class="logo">
-            <img src="assets/images/logo.svg" alt="ERP Support Logo" width="24" height="24" />
-          </div>
           <a class="btn" routerLink="/tickets">My Work</a>
           <a class="btn" routerLink="/kb">Search KB</a>
         </div>
@@ -56,9 +52,8 @@ import { AuthService } from './core/services/auth.service';
     :host { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .app-shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; background:#f7f7f9; }
     .sidebar { background:#111827; color:#e5e7eb; display:flex; flex-direction:column; padding:18px 14px; }
-    .brand { padding: 6px 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px; }
-    .brand-title { font-weight: 700; letter-spacing: .3px; }
-    .brand-sub { font-size: 12px; color:#9ca3af; margin-top:2px; }
+    .brand { padding: 6px 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px; display:flex; justify-content:center; }
+    .brand-logo { width: 100%; max-width: 110px; height: auto; object-fit: contain; border-radius: 6px; }
     .nav { display:flex; flex-direction:column; gap:6px; padding: 6px; }
     .nav a { color:#e5e7eb; text-decoration:none; padding:10px 10px; border-radius:10px; font-size:14px; }
     .nav a:hover { background: rgba(255,255,255,0.06); }

@@ -57,16 +57,19 @@ public class TicketService {
                                               AppModule AppModule, Long assignedToId,
                                               Long createdById, int page, int size,
                                               User currentUser) {
-        // Requesters can only see their own tickets
         Long effectiveCreatedById = currentUser.getRole() == UserRole.REQUESTER
                 ? currentUser.getId()
                 : createdById;
+
+        Long effectiveAssignedToId = currentUser.getRole() == UserRole.AGENT
+                ? currentUser.getId()
+                : assignedToId;
 
         return ticketRepo.findWithFilters(
                 status != null ? status.name() : null,
                 priority != null ? priority.name() : null,
                 AppModule != null ? AppModule.name() : null,
-                assignedToId, effectiveCreatedById,
+                effectiveAssignedToId, effectiveCreatedById,
                 PageRequest.of(page, size, Sort.unsorted())
         ).map(mapper::toSummary);
     }
