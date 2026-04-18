@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ public class KbController {
 
     private final KbService kbService;
 
+    @PreAuthorize("hasAnyRole('AGENT','ADMIN')")
     @PostMapping
     public ResponseEntity<KbArticleDto> create(
             @Valid @RequestBody CreateKbArticleRequest req,
@@ -28,6 +30,7 @@ public class KbController {
         return ResponseEntity.status(HttpStatus.CREATED).body(kbService.create(req, currentUser));
     }
 
+    @PreAuthorize("hasAnyRole('AGENT','ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<KbArticleDto> update(
             @PathVariable Long id,
@@ -48,11 +51,13 @@ public class KbController {
         return ResponseEntity.ok(kbService.getById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/publish")
     public ResponseEntity<KbArticleDto> publish(@PathVariable Long id) {
         return ResponseEntity.ok(kbService.publish(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/unpublish")
     public ResponseEntity<KbArticleDto> unpublish(@PathVariable Long id) {
         return ResponseEntity.ok(kbService.unpublish(id));
