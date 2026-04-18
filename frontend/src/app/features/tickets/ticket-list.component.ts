@@ -48,7 +48,7 @@ export class StatusLabelPipe implements PipeTransform {
 
     <div class="filters" style="margin-top:-8px;">
       <button class="btn-ghost" (click)="showAll()" [disabled]="viewMode() === 'ALL'">All</button>
-      <button class="btn-ghost" (click)="showMyAssigned()" [disabled]="viewMode() === 'MY'">My Assigned</button>
+      <button class="btn-ghost" (click)="showMyAssigned()" [disabled]="viewMode() === 'MY'" *ngIf="auth.hasRole('AGENT','ADMIN')">My Assigned</button>
       <button class="btn-ghost" (click)="showUnassigned()" [disabled]="viewMode() === 'UNASSIGNED'">Unassigned</button>
     </div>
 

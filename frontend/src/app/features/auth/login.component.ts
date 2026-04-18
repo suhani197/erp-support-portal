@@ -11,7 +11,9 @@ import { AuthService } from '../../core/services/auth.service';
     <div class="login-page">
       <div class="login-card">
         <div class="login-header">
-          <div class="login-logo">⚙</div>
+          <div class="login-logo">
+            <img src="assets/images/logologin.svg" alt="ERP Support Logo" width="120" height="48" />
+          </div>
           <h1>ERP Support Portal</h1>
           <p>Sign in to your account</p>
         </div>
@@ -41,15 +43,24 @@ import { AuthService } from '../../core/services/auth.service';
   `,
   styles: [`
     .login-page {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: #f5f5f0; padding: 1rem;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f0;
+      padding: 1rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
     .login-card {
       background: white; border-radius: 16px; border: 1px solid #e5e5e0;
       padding: 2.5rem 2rem; width: 100%; max-width: 400px;
     }
     .login-header { text-align: center; margin-bottom: 2rem; }
-    .login-logo { font-size: 36px; margin-bottom: 0.75rem; }
+    .login-logo { margin-bottom: 0.75rem; display: flex; justify-content: center; }
     h1 { margin: 0 0 0.5rem; font-size: 22px; font-weight: 600; color: #1a1a2e; }
     p { margin: 0; color: #888; font-size: 14px; }
 

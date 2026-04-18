@@ -127,10 +127,27 @@ public class TicketService {
                 .filter(u -> u.getRole() == UserRole.AGENT || u.getRole() == UserRole.ADMIN)
                 .orElseThrow(() -> new ResourceNotFoundException("Agent not found: " + agentId));
 
+
         ticket.setAssignedTo(agent);
         if (ticket.getStatus() == TicketStatus.NEW) {
             ticket.setStatus(TicketStatus.ASSIGNED);
         }
+        ticket = ticketRepo.save(ticket);
+        return mapper.toDetail(ticket, slaService.getMetrics(id), slaService.getPolicy(ticket.getPriority()));
+    }
+
+    @Transactional
+    public TicketDetailDto unassignTicket(Long id, User currentUser) {
+        Ticket ticket = findTicket(id);
+
+        // Only agents/admins can unassign, and only if they're assigned to it or are admin
+        if (currentUser.getRole() != UserRole.ADMIN &&
+            (ticket.getAssignedTo() == null || !ticket.getAssignedTo().getId().equals(currentUser.getId()))) {
+            throw new AccessDeniedException("Can only unassign tickets assigned to you");
+        }
+
+        ticket.setAssignedTo(null);
+        ticket.setStatus(TicketStatus.NEW); // Unassigned tickets should be NEW
         ticket = ticketRepo.save(ticket);
         return mapper.toDetail(ticket, slaService.getMetrics(id), slaService.getPolicy(ticket.getPriority()));
     }

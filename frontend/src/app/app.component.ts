@@ -38,6 +38,9 @@ import { AuthService } from './core/services/auth.service';
           <span class="muted">ERP Support Portal</span>
         </div>
         <div class="top-actions">
+          <div class="logo">
+            <img src="assets/images/logo.svg" alt="ERP Support Logo" width="24" height="24" />
+          </div>
           <a class="btn" routerLink="/tickets">My Work</a>
           <a class="btn" routerLink="/kb">Search KB</a>
         </div>
@@ -71,7 +74,8 @@ import { AuthService } from './core/services/auth.service';
     .topbar { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#ffffff; border-bottom:1px solid #e5e7eb; }
     .crumb { font-size: 13px; }
     .muted { color:#6b7280; }
-    .top-actions { display:flex; gap:10px; }
+    .top-actions { display:flex; gap:10px; align-items: center; }
+    .logo { margin-right: 8px; }
     .btn { border:1px solid #e5e7eb; background:#fff; padding:8px 12px; border-radius:10px; text-decoration:none; color:#111827; font-size:13px; }
     .btn:hover { background:#f9fafb; }
     .page { padding: 18px; }

@@ -144,6 +144,11 @@ export class StatusFmtPipe implements PipeTransform {
                 <button class="btn-action" (click)="assignToSelf()">Assign to me</button>
               }
 
+              <!-- Unassign if assigned to current user -->
+              @if (ticket()!.assignedTo?.id === auth.currentUser()?.id) {
+                <button class="btn-action unassign" (click)="unassign()">Unassign</button>
+              }
+
               <!-- Status transitions -->
               @for (next of allowedTransitions(); track next) {
                 <button class="btn-action" [class.resolve]="next === 'RESOLVED'"
@@ -215,6 +220,8 @@ export class StatusFmtPipe implements PipeTransform {
       font-size: 13px; cursor: pointer; text-align: left; transition: all 0.15s;
     }
     .btn-action:hover { background: #f8f8f5; }
+    .btn-action.unassign { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+    .btn-action.unassign:hover { background: #fef2f2; }
     .btn-action.resolve { background: #dcfce7; border-color: #bbf7d0; color: #166534; }
 
     .badge { display: inline-block; padding: 3px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; }
@@ -279,6 +286,11 @@ export class TicketDetailComponent implements OnInit {
     this.ticketSvc.assign(id, agentId).subscribe(t => this.ticket.set(t));
   }
 
+  unassign() {
+    const id = this.ticket()!.id;
+    this.ticketSvc.unassign(id).subscribe(t => this.ticket.set(t));
+  }
+
   submitComment() {
     if (!this.commentBody.trim()) return;
     const id   = this.ticket()!.id;
@@ -290,5 +302,3 @@ export class TicketDetailComponent implements OnInit {
     });
   }
 }
-
-

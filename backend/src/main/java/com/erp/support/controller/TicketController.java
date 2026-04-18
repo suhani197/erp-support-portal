@@ -66,6 +66,13 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.assignTicket(id, req.getAgentId(), currentUser));
     }
 
+    @DeleteMapping("/{id}/assign")
+    public ResponseEntity<TicketDetailDto> unassign(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(ticketService.unassignTicket(id, currentUser));
+    }
+
     @PostMapping("/{id}/comments")
     public ResponseEntity<CommentDto> addComment(
             @PathVariable Long id,

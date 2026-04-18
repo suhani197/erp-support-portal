@@ -1,21 +1,17 @@
 package com.erp.support.repository;
 import com.erp.support.entity.KbArticle;
-import com.erp.support.enums.AppModule;
 import com.erp.support.enums.KbStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import java.util.List;
 public interface KbArticleRepository extends JpaRepository<KbArticle, Long> {
     List<KbArticle> findByStatus(KbStatus status);
-    @Query("""
-        SELECT a FROM KbArticle a WHERE
-        (:status IS NULL OR a.status = :status) AND
-        (:appModule IS NULL OR a.appModule = :appModule) AND
-        (:keyword IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%',:keyword,'%'))
-          OR LOWER(a.symptoms) LIKE LOWER(CONCAT('%',:keyword,'%')))
-    """)
-    List<KbArticle> search(@Param("status") KbStatus status,
-                           @Param("appModule") AppModule appModule,
-                           @Param("keyword") String keyword);
+    
+    @Query(value = """
+        SELECT * FROM kb_articles ka WHERE
+        (?1 IS NULL OR ka.status = CAST(?1 AS text)) AND
+        (?2 IS NULL OR ka.module = CAST(?2 AS text)) AND
+        (?3 IS NULL OR ka.title ILIKE '%' || ?3 || '%' OR ka.symptoms ILIKE '%' || ?3 || '%')
+        """, nativeQuery = true)
+    List<KbArticle> search(String status, String appModule, String keyword);
 }

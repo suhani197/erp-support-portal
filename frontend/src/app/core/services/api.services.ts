@@ -51,6 +51,10 @@ export class TicketService {
     return this.http.post<TicketDetail>(`${API}/tickets/${id}/assign`, { agentId });
   }
 
+  unassign(id: number) {
+    return this.http.delete<TicketDetail>(`${API}/tickets/${id}/assign`);
+  }
+
   addComment(id: number, body: string, commentType: string = 'PUBLIC') {
     return this.http.post<Comment>(`${API}/tickets/${id}/comments`, { body, commentType });
   }
@@ -60,42 +64,45 @@ export class TicketService {
 export class KbService {
   private http = inject(HttpClient);
 
-  search(params: Record<string, any> = {}) {
-    // Backend expects parameter name 'AppModule'. Accept 'module' and map.
-    // Accept multiple names from UI and normalize to what backend expects
-    if (params['appModule'] && !params['AppModule']) {
-      params['AppModule'] = params['appModule'];
-      delete params['appModule'];
-    }
-    if (params['module'] && !params['AppModule']) {
-      params['AppModule'] = params['module'];
-      delete params['module'];
-    }
+   search(params: Record<string, any> = {}) {
+     // Backend expects parameter name 'AppModule'. Accept 'module' and map.
+     // Accept multiple names from UI and normalize to what backend expects
+     if (params['appModule'] && !params['AppModule']) {
+       params['AppModule'] = params['appModule'];
+       delete params['appModule'];
+     }
+     if (params['module'] && !params['AppModule']) {
+       params['AppModule'] = params['module'];
+       delete params['module'];
+     }
 
-    // Search text key mapping (UI might send q/search/keyword, backend might expect query)
-    if (params['q'] && !params['query']) { params['query'] = params['q']; delete params['q']; }
-    if (params['search'] && !params['query']) { params['query'] = params['search']; delete params['search']; }
-    if (params['keyword'] && !params['query']) { params['query'] = params['keyword']; delete params['keyword']; }
+     // Backend expects 'keyword' parameter, not 'query'. Map 'query' to 'keyword' if needed.
+     if (params['query'] && !params['keyword']) { params['keyword'] = params['query']; delete params['query']; }
+     // Also support other common search parameter names
+     if (params['q'] && !params['keyword']) { params['keyword'] = params['q']; delete params['q']; }
+     if (params['search'] && !params['keyword']) { params['keyword'] = params['search']; delete params['search']; }
     let p = new HttpParams();
     Object.entries(params).forEach(([k, v]) => {
       if (v !== '' && v !== null && v !== undefined) p = p.set(k, String(v));
     });
-    return this.http.get<KbArticle[]>(`${API}/kb/articles`, { params: p }).pipe(
-      map(list => (list || []).map((a: any) => ({
-        ...a,
-        AppModule: a.AppModule ?? a.appModule
-      })))
-    );
+     return this.http.get<KbArticle[]>(`${API}/kb/articles`, { params: p }).pipe(
+       map(list => (list || []).map((a: any) => ({
+         ...a,
+         appModule: a.AppModule ?? a.appModule,
+         module: a.AppModule ?? a.appModule
+       })))
+     );
   }
 
-  get(id: number) {
-    return this.http.get<KbArticle>(`${API}/kb/articles/${id}`).pipe(
-      map((a: any) => ({
-        ...a,
-        AppModule: a.AppModule ?? a.appModule
-      }))
-    );
-  }
+   get(id: number) {
+     return this.http.get<KbArticle>(`${API}/kb/articles/${id}`).pipe(
+       map((a: any) => ({
+         ...a,
+         appModule: a.AppModule ?? a.appModule,
+         module: a.AppModule ?? a.appModule
+       }))
+     );
+   }
 
   create(body: any) {
     return this.http.post<KbArticle>(`${API}/kb/articles`, body);

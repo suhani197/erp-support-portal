@@ -71,7 +71,9 @@ public class KbService {
     }
 
     public List<KbArticleDto> search(String keyword, AppModule AppModule, KbStatus status) {
-        return kbRepo.search(status, AppModule, keyword)
+        String statusStr = status != null ? status.name() : null;
+        String moduleStr = AppModule != null ? AppModule.name() : null;
+        return kbRepo.search(statusStr, moduleStr, keyword)
                 .stream().map(mapper::toKbArticleDto).toList();
     }
 
