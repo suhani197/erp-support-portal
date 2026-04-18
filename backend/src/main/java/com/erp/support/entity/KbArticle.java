@@ -24,7 +24,8 @@ public class KbArticle {
     private String title;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "module")
+    @Column(name = "module", columnDefinition = "ticket_module")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private AppModule appModule;
 
     @Column(columnDefinition = "TEXT")

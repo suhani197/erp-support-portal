@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,6 +59,7 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.updateStatus(id, req.getStatus(), currentUser));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/assign")
     public ResponseEntity<TicketDetailDto> assign(
             @PathVariable Long id,
@@ -66,6 +68,7 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.assignTicket(id, req.getAgentId(), currentUser));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/assign")
     public ResponseEntity<TicketDetailDto> unassign(
             @PathVariable Long id,

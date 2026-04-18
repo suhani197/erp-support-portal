@@ -28,6 +28,7 @@ public class TicketComment {
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "comment_type")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private CommentType commentType = CommentType.PUBLIC;
 
     @CreationTimestamp

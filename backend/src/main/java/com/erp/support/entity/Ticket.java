@@ -29,14 +29,17 @@ public class Ticket {
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "ticket_status")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private TicketStatus status = TicketStatus.NEW;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "ticket_priority")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private Priority priority = Priority.P3;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "module", columnDefinition = "ticket_module")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private AppModule appModule;
 
     @ManyToOne(fetch = FetchType.LAZY)

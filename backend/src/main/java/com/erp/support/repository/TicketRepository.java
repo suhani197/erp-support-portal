@@ -1,9 +1,6 @@
 package com.erp.support.repository;
 
 import com.erp.support.entity.Ticket;
-import com.erp.support.enums.AppModule;
-import com.erp.support.enums.Priority;
-import com.erp.support.enums.TicketStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,23 +11,36 @@ import java.util.List;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
-    @Query("""
-        SELECT t FROM Ticket t
-        WHERE (:status IS NULL OR t.status = :status)
-          AND (:priority IS NULL OR t.priority = :priority)
-          AND (:appModule IS NULL OR t.appModule = :appModule)
+    @Query(value = """
+        SELECT * FROM tickets t
+        WHERE (:status IS NULL OR t.status = CAST(:status AS ticket_status))
+          AND (:priority IS NULL OR t.priority = CAST(:priority AS ticket_priority))
+          AND (:appModule IS NULL OR t.module = CAST(:appModule AS ticket_module))
           AND (
-          :assignedToId IS NULL
-          OR (:assignedToId = -1 AND t.assignedTo IS NULL)
-          OR (:assignedToId <> -1 AND t.assignedTo.id = :assignedToId)
+              :assignedToId IS NULL
+              OR (:assignedToId = -1 AND t.assigned_to_id IS NULL)
+              OR (:assignedToId <> -1 AND t.assigned_to_id = :assignedToId)
           )
-          AND (:createdById IS NULL OR t.createdBy.id = :createdById)
-        ORDER BY t.createdAt DESC
-    """)
+          AND (:createdById IS NULL OR t.created_by_id = :createdById)
+        ORDER BY t.created_at DESC
+        """,
+        countQuery = """
+        SELECT COUNT(*) FROM tickets t
+        WHERE (:status IS NULL OR t.status = CAST(:status AS ticket_status))
+          AND (:priority IS NULL OR t.priority = CAST(:priority AS ticket_priority))
+          AND (:appModule IS NULL OR t.module = CAST(:appModule AS ticket_module))
+          AND (
+              :assignedToId IS NULL
+              OR (:assignedToId = -1 AND t.assigned_to_id IS NULL)
+              OR (:assignedToId <> -1 AND t.assigned_to_id = :assignedToId)
+          )
+          AND (:createdById IS NULL OR t.created_by_id = :createdById)
+        """,
+        nativeQuery = true)
     Page<Ticket> findWithFilters(
-            @Param("status") TicketStatus status,
-            @Param("priority") Priority priority,
-            @Param("appModule") AppModule appModule,
+            @Param("status") String status,
+            @Param("priority") String priority,
+            @Param("appModule") String appModule,
             @Param("assignedToId") Long assignedToId,
             @Param("createdById") Long createdById,
             Pageable pageable);

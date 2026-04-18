@@ -63,8 +63,11 @@ public class TicketService {
                 : createdById;
 
         return ticketRepo.findWithFilters(
-                status, priority, AppModule, assignedToId, effectiveCreatedById,
-                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+                status != null ? status.name() : null,
+                priority != null ? priority.name() : null,
+                AppModule != null ? AppModule.name() : null,
+                assignedToId, effectiveCreatedById,
+                PageRequest.of(page, size, Sort.unsorted())
         ).map(mapper::toSummary);
     }
 
@@ -122,6 +125,9 @@ public class TicketService {
 
     @Transactional
     public TicketDetailDto assignTicket(Long id, Long agentId, User currentUser) {
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            throw new AccessDeniedException("Only admins can assign tickets");
+        }
         Ticket ticket = findTicket(id);
         User agent = userRepo.findById(agentId)
                 .filter(u -> u.getRole() == UserRole.AGENT || u.getRole() == UserRole.ADMIN)

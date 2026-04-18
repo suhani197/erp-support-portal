@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Entity @Table(name = "sla_policies") @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class SlaPolicy {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Enumerated(EnumType.STRING) @Column(columnDefinition = "ticket_priority", unique = true) private Priority priority;
+    @Enumerated(EnumType.STRING) @Column(columnDefinition = "ticket_priority", unique = true) @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM) private Priority priority;
     private int firstResponseMinutes;
     private int resolutionMinutes;
     @UpdateTimestamp private LocalDateTime updatedAt;

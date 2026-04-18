@@ -6,7 +6,7 @@ import {
   SlaPolicy, DashboardSummary, AgentWorkload
 } from '../../shared/models/models';
 
-const API = 'http://localhost:8080/api';
+const API = 'http://localhost:8081/api';
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {

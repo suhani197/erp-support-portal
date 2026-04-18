@@ -28,6 +28,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "user_role")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private UserRole role;
 
     @Column(nullable = false)

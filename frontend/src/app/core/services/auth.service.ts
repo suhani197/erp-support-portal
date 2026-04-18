@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { LoginResponse, User } from '../../shared/models/models';
 
-const API = 'http://localhost:8080/api';
+const API = 'http://localhost:8081/api';
 const TOKEN_KEY = 'erp_jwt';
 const USER_KEY  = 'erp_user';
 

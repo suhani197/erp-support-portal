@@ -139,14 +139,20 @@ export class StatusFmtPipe implements PipeTransform {
             <div class="card actions-card">
               <div class="section-label">Actions</div>
 
-              <!-- Assign to self -->
-              @if (!ticket()!.assignedTo || ticket()!.assignedTo?.id !== auth.currentUser()?.id) {
-                <button class="btn-action" (click)="assignToSelf()">Assign to me</button>
-              }
-
-              <!-- Unassign if assigned to current user -->
-              @if (ticket()!.assignedTo?.id === auth.currentUser()?.id) {
-                <button class="btn-action unassign" (click)="unassign()">Unassign</button>
+              <!-- Assign controls (admin only) -->
+              @if (auth.hasRole('ADMIN')) {
+                <div class="assign-row">
+                  <select [(ngModel)]="selectedAgent" class="assign-select">
+                    <option [ngValue]="null">— Assign to agent —</option>
+                    @for (a of agents(); track a.id) {
+                      <option [ngValue]="a.id">{{ a.fullName }} ({{ a.role }})</option>
+                    }
+                  </select>
+                  <button class="btn-action" [disabled]="!selectedAgent" (click)="assignToAgent()">Assign</button>
+                </div>
+                @if (ticket()!.assignedTo) {
+                  <button class="btn-action unassign" (click)="unassign()">Unassign</button>
+                }
               }
 
               <!-- Status transitions -->
@@ -220,6 +226,9 @@ export class StatusFmtPipe implements PipeTransform {
       font-size: 13px; cursor: pointer; text-align: left; transition: all 0.15s;
     }
     .btn-action:hover { background: #f8f8f5; }
+    .assign-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .assign-select { flex: 1; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; }
+    .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-action.unassign { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
     .btn-action.unassign:hover { background: #fef2f2; }
     .btn-action.resolve { background: #dcfce7; border-color: #bbf7d0; color: #166534; }
@@ -246,8 +255,10 @@ export class TicketDetailComponent implements OnInit {
 
   ticket  = signal<TicketDetail | null>(null);
   loading = signal(true);
-  commentBody = '';
-  isInternal  = false;
+  commentBody  = '';
+  isInternal   = false;
+  agents       = signal<any[]>([]);
+  selectedAgent: number | null = null;
 
   private readonly TRANSITIONS: Record<string, string[]> = {
     NEW:              ['ASSIGNED'],
@@ -261,6 +272,11 @@ export class TicketDetailComponent implements OnInit {
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.load(id);
+    if (this.auth.hasRole('ADMIN')) {
+      this.adminSvc.getUsers().subscribe(users =>
+        this.agents.set(users.filter(u => u.role === 'AGENT' || u.role === 'ADMIN'))
+      );
+    }
   }
 
   load(id: number) {
@@ -283,7 +299,13 @@ export class TicketDetailComponent implements OnInit {
   assignToSelf() {
     const id      = this.ticket()!.id;
     const agentId = this.auth.currentUser()!.id;
-    this.ticketSvc.assign(id, agentId).subscribe(t => this.ticket.set(t));
+    this.ticketSvc.assign(id, agentId).subscribe(t => { this.ticket.set(t); this.selectedAgent = null; });
+  }
+
+  assignToAgent() {
+    if (!this.selectedAgent) return;
+    const id = this.ticket()!.id;
+    this.ticketSvc.assign(id, this.selectedAgent).subscribe(t => { this.ticket.set(t); this.selectedAgent = null; });
   }
 
   unassign() {
